@@ -5,9 +5,9 @@
 package main
 
 import (
+	"github.com/kuroneko/gosqlite3"
 	"log"
 	"runtime"
-	"github.com/kuroneko/gosqlite3"
 )
 
 // Re use sqlite3 database; append it our own functions.
@@ -16,7 +16,7 @@ type Database struct {
 }
 
 // Prepare(s, v), Step() and error checking
-func (db *Database)Execute2(s string, v... interface{}) (stmt *sqlite3.Statement, err error) {
+func (db *Database) Execute2(s string, v ...interface{}) (stmt *sqlite3.Statement, err error) {
 	stmt, err = db.Prepare(s, v...)
 	if err == nil {
 		err = stmt.Step()
@@ -30,7 +30,7 @@ func (db *Database)Execute2(s string, v... interface{}) (stmt *sqlite3.Statement
 
 // Create a table described by descr
 func (db *Database) CreateTable(descr string) {
-	_, err  := db.Execute2(descr)
+	_, err := db.Execute2(descr)
 	if err != nil {
 		log.Fatal("Error when creating SQLite tables:", err)
 		return
@@ -68,17 +68,17 @@ func (db *Database) CreateTables() {
 
 	// -1 is invalid id for all.
 	db.Execute2("BEGIN IMMEDIATE TRANSACTION")
-		db.Execute2("insert or ignore into tags(id) values (-1)")
-		db.Execute2("insert or ignore into items(id) values (-1)")
-		db.Execute2("insert or ignore into mapping(id, idt, idi) values (-1, -1, -1)")
+	db.Execute2("insert or ignore into tags(id) values (-1)")
+	db.Execute2("insert or ignore into items(id) values (-1)")
+	db.Execute2("insert or ignore into mapping(id, idt, idi) values (-1, -1, -1)")
 	db.Execute2("COMMIT TRANSACTION")
 }
 
 // Item to communicate value from/to db/dbuser
 type Item struct {
-	Id		int64
-	Content	string
-	Tags	string
+	Id      int64
+	Content string
+	Tags    string
 }
 
 // Retrieve an Item and its tag
@@ -95,7 +95,7 @@ func (db *Database) GetItem(id int64) (i Item) {
 	v := stmt.Row()
 
 	if err == sqlite3.ROW && v != nil && v[0] != nil {
-		i = Item{ id, v[0].(string), v[1].(string) }
+		i = Item{id, v[0].(string), v[1].(string)}
 	}
 	return
 }
@@ -166,8 +166,8 @@ func (db *Database) GetItems(qts Qtags, id int64) (items []Item) {
 		return
 	}
 
-	stmt.All(func (s *sqlite3.Statement, v... interface{}) {
-		i := Item{ v[0].(int64), v[1].(string), v[2].(string) }
+	stmt.All(func(s *sqlite3.Statement, v ...interface{}) {
+		i := Item{v[0].(int64), v[1].(string), v[2].(string)}
 		if hasQtags(i, qts) {
 			items = append(items, i)
 		}

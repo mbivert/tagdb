@@ -55,9 +55,12 @@ func delete(w http.ResponseWriter, r *http.Request) {
 
 func tagHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-		case "GET": get(w, r)
-		case "POST": post(w, r)
-		case "DELETE": delete(w, r)
+	case "GET":
+		get(w, r)
+	case "POST":
+		post(w, r)
+	case "DELETE":
+		delete(w, r)
 	}
 }
 
@@ -65,7 +68,7 @@ func main() {
 	db = NewTags(*dbfile)
 	http.HandleFunc("/", tagHandler)
 
-	log.Print("Launching on http://localhost:"+*port)
+	log.Print("Launching on http://localhost:" + *port)
 
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }

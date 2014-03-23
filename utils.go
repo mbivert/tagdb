@@ -19,16 +19,20 @@ func xItoa(i int64) string {
 }
 
 // Qtag operators
-func isop(r byte) bool { return r == '/' || r == '!' /* || r == '|' */ }
+func isop(r byte) bool {
+	return r == '/' || r == '!' /* || r == '|' */
+}
 
 // next index which is not an operator if any
 func skipOp(s []byte) (i int) {
-	for i = 0; i < len(s) && isop(s[i]); i++ {}
+	for i = 0; i < len(s) && isop(s[i]); i++ {
+	}
 	return
 }
 
 // next index which is an operator if any
 func skipNotOp(s []byte) (i int) {
-	for i = 0; i < len(s) && !isop(s[i]); i++ {}
+	for i = 0; i < len(s) && !isop(s[i]); i++ {
+	}
 	return
 }

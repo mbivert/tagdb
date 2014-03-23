@@ -14,23 +14,23 @@ import (
 // structured from http://www.golang-book.com/12
 // XXX see if a full testsuite can be written (single test structure)
 type testpair struct {
-	s		[]byte
-	id		int64
-	qts		Qtags
+	s   []byte
+	id  int64
+	qts Qtags
 }
 
-var tests = []testpair {
+var tests = []testpair{
 	{
 		[]byte("/!foo/bar!baz!lol/////xd!rofl/foo!/foo/test//"),
 		-1,
 		Qtags{
-			{ true, "bar" },
-			{ false, "baz" },
-			{ false, "foo" },
-			{ false, "lol" },
-			{ false, "rofl" },
-			{ true, "test" },
-			{ true, "xd" },
+			{true, "bar"},
+			{false, "baz"},
+			{false, "foo"},
+			{false, "lol"},
+			{false, "rofl"},
+			{true, "test"},
+			{true, "xd"},
 		},
 	},
 	{
@@ -42,19 +42,19 @@ var tests = []testpair {
 		[]byte("/!43!11"),
 		-1,
 		Qtags{
-			{ false, "11" },
-			{ false, "43" },
+			{false, "11"},
+			{false, "43"},
 		},
 	},
 	{
 		[]byte("/42/foo/baz/bar/whatsup/lol!foo"),
 		42,
 		Qtags{
-			{ true, "bar" },
-			{ true, "baz" },
-			{ true, "foo" },
-			{ true, "lol" },
-			{ true, "whatsup" },
+			{true, "bar"},
+			{true, "baz"},
+			{true, "foo"},
+			{true, "lol"},
+			{true, "whatsup"},
 		},
 	},
 }
@@ -85,7 +85,7 @@ func TestXint(t *testing.T) {
 }
 
 // Storage testing. Also check some basic GetItems forms
-var items = []Item {
+var items = []Item{
 	{
 		1,
 		"some content",
@@ -114,34 +114,34 @@ var items = []Item {
 }
 
 type testpair2 struct {
-	s		[]byte
-	ids		[]int64
+	s   []byte
+	ids []int64
 }
 
-var getqueries = []testpair2 {
+var getqueries = []testpair2{
 	{
 		[]byte("/2"),
-		[]int64{ 2 },
+		[]int64{2},
 	},
 	{
 		[]byte("/!2!3"),
-		[]int64{ 1, 4, 5 },
+		[]int64{1, 4, 5},
 	},
 	{
 		[]byte("/foo"),
-		[]int64{ 1, 2, 3 },
+		[]int64{1, 2, 3},
 	},
 	{
 		[]byte("/!foo"),
-		[]int64{ 4, 5 },
+		[]int64{4, 5},
 	},
 	{
 		[]byte("/foo/bar!baz"),
-		[]int64{ 2 },
+		[]int64{2},
 	},
 	{
 		[]byte("/foo/bar!baz/rofl"),
-		[]int64{ },
+		[]int64{},
 	},
 }
 
@@ -161,7 +161,7 @@ func TestStorage1(t *testing.T) {
 
 	// AddItem
 	for _, item := range items {
-		qts, _ :=  ProcessQtags([]byte(item.Tags))
+		qts, _ := ProcessQtags([]byte(item.Tags))
 		id := db.AddItem(item.Content, qts)
 		if id == -1 {
 			t.Error("Item not added ", item)
@@ -186,19 +186,19 @@ func TestStorage1(t *testing.T) {
 	}
 }
 
-var retags = []string {
+var retags = []string{
 	"/1!foo!baz/test",
 	"/2/baz",
 }
 
-var retagqueries = []testpair2 {
+var retagqueries = []testpair2{
 	{
 		[]byte("/test"),
-		[]int64{ 1, 2 },
+		[]int64{1, 2},
 	},
 	{
 		[]byte("/baz"),
-		[]int64{ 2, 3 },
+		[]int64{2, 3},
 	},
 }
 
@@ -219,7 +219,7 @@ func TestStorage2(t *testing.T) {
 
 	// AddItem
 	for _, item := range items {
-		qts, _ :=  ProcessQtags([]byte(item.Tags))
+		qts, _ := ProcessQtags([]byte(item.Tags))
 		id := db.AddItem(item.Content, qts)
 		if id == -1 {
 			t.Error("Item not added ", item)
@@ -255,7 +255,7 @@ func TestStorage2(t *testing.T) {
 	for _, pair := range retagqueries {
 		db.DeleteItems(ProcessQtags(pair.s))
 		for _, id := range pair.ids {
-			its := db.GetItems(ProcessQtags([]byte("/"+xItoa(id))))
+			its := db.GetItems(ProcessQtags([]byte("/" + xItoa(id))))
 			if len(its) != 0 {
 				t.Error("Should have been deleted:", id)
 			}
@@ -264,7 +264,7 @@ func TestStorage2(t *testing.T) {
 }
 
 type JSONID struct {
-	Id	int64
+	Id int64
 }
 
 // HTTP testing, re-use the data of TestStorage1/2
@@ -309,7 +309,7 @@ func TestHTTP(t *testing.T) {
 
 	// GET by ID to retrieve them, check JSON
 	for _, item := range items {
-		resp, err := http.Get(server.URL+"/"+xItoa(item.Id))
+		resp, err := http.Get(server.URL + "/" + xItoa(item.Id))
 		if err != nil {
 			t.Error("HTTP GET failed", err, "on", server.URL+"/"+xItoa(item.Id))
 		}
@@ -331,7 +331,7 @@ func TestHTTP(t *testing.T) {
 
 	// GET by Qtag
 	for _, pair := range getqueries {
-		resp, err := http.Get(server.URL+"/"+string(pair.s))
+		resp, err := http.Get(server.URL + "/" + string(pair.s))
 		if err != nil {
 			t.Error("HTTP GET failed", err, "on", server.URL+"/"+string(pair.s))
 		}
@@ -366,7 +366,7 @@ func TestHTTP(t *testing.T) {
 	}
 	// GET to test previous retag
 	for _, pair := range retagqueries {
-		resp, err := http.Get(server.URL+"/"+string(pair.s))
+		resp, err := http.Get(server.URL + "/" + string(pair.s))
 		if err != nil {
 			t.Error("HTTP GET (retag) failed", err, "on", server.URL+"/"+string(pair.s))
 		}
@@ -402,7 +402,7 @@ func TestHTTP(t *testing.T) {
 		defer resp.Body.Close()
 
 		for _, id := range pair.ids {
-			resp2, err := http.Get(server.URL+"/"+xItoa(id))
+			resp2, err := http.Get(server.URL + "/" + xItoa(id))
 			if err != nil {
 				t.Error("Error with GET on", server.URL+"/"+xItoa(id))
 			}
