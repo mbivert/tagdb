@@ -5,6 +5,12 @@ accessible through tags.
 Any meta-data can be embedded in tags, which make it a powerful
 convention-based storage system.
 
+This document describes first a "specification" of the TagDB; then
+the API of the implementation, and finally makes a few general
+remarks.
+
+Parts between [] are not implemented.
+
 == Query Tag (Qtag)
 === Path in filesystem
 In a classical (Unix) filesystem, files are accessible through a path:
@@ -27,9 +33,9 @@ Currently there are two operators:
 	- ! which indicates the following item should _not_ be present ('not')
 
 [
-We may implement:
-	- | which indicates the following item may be present ('or')
-	- expression parenthesing
+	We may implement:
+		- | which indicates the following item may be present ('or')
+		- expression parenthesing
 ]
 
 === Name
@@ -155,4 +161,3 @@ To run testsuite:
 - Define a full query language.
 - Implement application using this as storage system, for instance a Gate,
   responsible for user authentication.
-
