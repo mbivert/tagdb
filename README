@@ -1,0 +1,158 @@
+= TagDB 
+A TagDB is a kind of filesystem where indexed ressources are
+accessible through tags.
+
+Any meta-data can be embedded in tags, which make it a powerful
+convention-based storage system.
+
+== Query Tag (Qtag)
+=== Path in filesystem
+In a classical (Unix) filesystem, files are accessible through a path:
+
+	/this/is/the/path/to/file/foobar
+
+In TagDB, a Qtag is the equivalent of a path : it allows to retrieve
+ressources. In its more useful form, it behaves as a directory path, in
+the sense it allows to retrieve many ressources at once.
+
+Qtag are visually inspired from the Unix path syntax.
+
+=== Qtags
+A Qtags is a list of Qtag. A Qtag is composed of an operator followed
+by a name
+
+=== Operators
+Currently there are two operators:
+	- / which indicates the following item should be present ('and')
+	- ! which indicates the following item should _not_ be present ('not')
+
+[
+We may implement:
+	- | which indicates the following item may be present ('or')
+	- expression parenthesing
+]
+
+=== Name
+The name of a Qtag may be either
+	- an Id, that is number
+	- a Tag, which is any UTF8 sequence which does not contains only
+	  numbers (that is, which cannot be confused with an Id)
+
+=== Restriction
+If the Qtag is related to a specific item, it must contains the Qtag '/id'
+in first position.
+
+	/12/…
+
+Tricky Qtags will usually results in undefined behavior.
+
+=== Examples
+To retrieve all files tagged by 'foo', 'bar' but not 'baz':
+
+	/foo/bar!baz
+
+To retrieve item with id '12345':
+
+	/12345
+
+To "test" if item with id '12345' is tagged by 'foo' and not by 'bar':
+
+	/12345/foo!baz
+
+If the Qtags is related to a specific Id, Qtags are reduced as such:
+
+	/12/foo/34		->		/12/foo
+	/12!34!11		->		/12
+
+As mentionned, Id *must* be in first position:
+
+	/foo/12			->		/foo
+
+We reduce list of consecutive operators to the last one:
+
+	/!/!foo/!!/b///	->		!foo/b
+
+[
+	If | Query get implemented, we may be able to retrieve ressource
+	with id 12 and ressource with id 34 through a single Qtags:
+
+		/12|34
+]
+
+[
+	=== Cache system
+	The first Qtag of the previous § is equivalent to
+
+		!baz/bar/foo, /bar/foo!baz, etc.
+
+	The cache system should thus sort the items, eg. by lexical order.
+	It may then maintain an in-memory cache associating a qtag
+	with the associated results.
+
+	Note that it allows caching a single item through a query
+	containing only an id, such as the second one. The results
+	of a Qtag should thus rather store pointers to cached-items.
+
+	The cache system is currently not implemented. Tags sorting however
+	is implemented.
+]
+
+= TagDB Implementation
+==== Description
+tags.go implements an HTTP interface to a single TagDB.
+This allows to retrieve, add and delete ressources from the
+TagDB using HTTP requests.
+
+==== API
+GET Qtag
+	- returns JSON-ified items matching the Qtag.
+
+POST Qtag content
+	- if Qtag contains an id:
+		-> update the tagging with Qtag: '/tag' add tag, '!tag' remove tag
+		-> if content is not empty, update the content with it
+	- else
+		- store content as a new ressource tagged by Qtag.
+	- in any case, returns a JSON-ified Id of the added/modified ressource
+	(is there a need to return more than the ID?)
+
+DELETE Qtag
+	- delete items matching Qtag.
+	(is there a need to return something?)
+
+==== Examples
+
+Retrieve JSON-ified elements matching 'foo', 'bar', but not 'baz':
+
+	GET /foo/bar!baz
+
+Update the content of item with id '12345', remove it tag 'baz' and
+add tag 'foo':
+
+	POST /12345/foo!baz newcontent
+
+To update many elements, for instance to rename tag 'foo' as 'bar':
+
+	forall item in GET /foo
+		POST /item!foo/bar
+	end
+
+Delete all the ressources tagged by 'tips'
+
+	DELETE /tips
+
+= Usage
+To build:
+
+  % go build .
+
+To run testsuite:
+
+  % go test .
+
+= Notes
+- Query language has the advantage not to be dependant on tree structure as XPATH.
+- Define a full query language.
+- Implement application using this as storage system, for instance a Gate,
+  responsible for user authentication.
+
